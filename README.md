@@ -5,7 +5,7 @@ A pipeline that given a BioProject ID will download and quantify all FASTQ files
 I created this pipeline so that I could easily download and quantify transcriptomic data from the ENA. One of the annoying things I ran into when doing this manually was storage where for a given project you could have to download > 200Gb of files. To deal with this, I set up the logic so that it would download a pair of files at a time, process them, then delete the files before moving on, thereby reducing the overall amount of storage needed at any given time.
 
 ### Requirements & Setup
-The pipeline is written in Python and makes calls to a Salmon docker container via ```subprocess```. Because of this you'll need the following packages installed:
+The pipeline is written in Python and makes calls to a Salmon docker container via ```subprocess```. Because of this you'll need to have docker installed set up and the following python packages installed:
 - docker >= 7.1.0
 - requests >= 2.31.0
 
