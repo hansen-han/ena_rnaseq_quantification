@@ -1,2 +1,2 @@
-# ena_utility
-Utility for downloading and processing FASTQs from the European Nucleotide Archive (ENA)
+# ENA (European Nucleotide Archive) Quantification Pipeline
+A pipeline that given a BioProject ID will download and quantify all FASTQ files using Salmon for analysis. 
