@@ -26,3 +26,10 @@ salmon index -t gencode.v39.transcripts.fa.gz --gencode -i gencode_index
 ```
 
 ### Usage
+
+Given a BioProject ID (ie: PRJNA494155), run the following python script while in the conda environment.
+
+```
+run_pipeline.py PRJNA494155
+```
+
