@@ -12,7 +12,7 @@ conda config --add channels bioconda
 conda create -n salmon salmon
 conda activate salmon
 conda install python = 3.10
-pip install requests pandas 
+pip install requests pandas tqdm
 ```
 
 ***Download human transcriptome reference file***
