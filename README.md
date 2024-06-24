@@ -7,16 +7,9 @@ I created this pipeline so that I could easily download and quantify transcripto
 ### Requirements & Setup
 ***Set up a conda environment and install dependencies***
 ```
-# Add channels in one command
 conda config --add channels conda-forge --add channels bioconda
-
-# Create the environment and install salmon in one command
 conda create -n salmon python=3.10 salmon
-
-# Activate the environment
 conda activate salmon
-
-# Install additional Python packages using pip
 pip install requests pandas tqdm
 ```
 
