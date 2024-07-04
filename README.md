@@ -1,29 +1,33 @@
 # ENA (European Nucleotide Archive) RNAseq Quantification Pipeline
-A pipeline that given a BioProject ID will download and quantify all FASTQ files using Salmon for analysis. 
+Given a BioProject ID, download and quantify all FASTQ files using Salmon for analysis. 
 
 ### Background
 I created this pipeline so that I could easily download and quantify transcriptomic data from the ENA. One of the annoying things I ran into when doing this manually was storage where for a given project you could have to download > 200Gb of files. To deal with this, I set up the logic so that it would download a pair of files at a time, process them, then delete the files before moving on, thereby reducing the overall amount of storage needed at any given time.
 
 ### Requirements & Setup
-The pipeline is written in Python and makes calls to a Salmon docker container via ```subprocess```. Because of this you'll need to have docker installed set up and the following python packages installed:
-- docker >= 7.1.0
-- requests >= 2.31.0
+***Set up a conda environment and install dependencies***
+```
+conda config --add channels conda-forge --add channels bioconda
+conda create -n salmon python=3.10 salmon
+conda activate salmon
+pip install requests pandas tqdm
+```
 
-To ensure Salmon docker container runs correctly locally, I reccomend that you allocate at least 8GB of memory to Docker. Insufficient memory can cause performance issues or failures when building a reference index and quantifying FASTQ files.
+***Download human transcriptome reference file***
+```
+wget ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_39/gencode.v39.transcripts.fa.gz
+```
+
+***Build index with salmon***
+```
+salmon index -t gencode.v39.transcripts.fa.gz --gencode -i gencode_index
+```
 
 ### Usage
 
-***Pull Salmon Docker Container & Build Target Transcriptome (Human Only)***   
-This only needs to be run once, will pull Salmon docker image, download a human reference transcriptome and build the index
- ```python
-from ena_quant import setup_salmon
-set_up_salmon()
+Given a BioProject ID (ie: PRJNA494155), run the following python script while in the conda environment.
+
+```
+run_pipeline.py PRJNA494155
 ```
 
-***Download and Quantify FASTQs for a BioProject***
-```python
-from ena_quant import download_and_quantify_bioproject_fastqs
-bioproject_id = "PRJNA494155"
-output_dir = "./PRJNA494155_output/"
-download_and_quantify_bioproject_fastqs(bioproject_id, output_dir)
-```
