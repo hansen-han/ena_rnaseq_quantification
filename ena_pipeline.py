@@ -23,7 +23,7 @@ def download_ftp_file(ftp_url, local_directory):
     
     # Ensure the local directory exists
     if not os.path.exists(local_directory):
-        os.makedirs(local_directory)
+        os.makedirs(local_directory) 
     
     # Define the local file path
     local_file_path = os.path.join(local_directory, filename)
@@ -52,10 +52,23 @@ def download_and_quantify_bioproject_fastqs(project_id):
 
     for sample in tqdm(project_data):
         sample_name = sample['run_accession']
+        output_path = "./" + project_id + "/" + sample_name
+
+        # Check if the file exists
+        file_exists = os.path.exists(output_path)
+        if file_exists:
+            print("Sample already processed, skipping")
+            continue
 
         # Download FASTQs for a sample
         ftp_address = sample['fastq_ftp']
         files = ftp_address.split(";")
+
+        # assuming that we are expecting paired-end reads, if there is only 1, abort.
+        if len(files) < 2:
+            print("Only one file found, skipping")
+            continue
+
         for file in files:
             if "ftp://" not in file:
                 file = 'ftp://' + file
@@ -65,7 +78,7 @@ def download_and_quantify_bioproject_fastqs(project_id):
         # After downloading them, quantify them with Salmon
         file_path_1 = local_directory + "/" + os.path.basename(files[0])
         file_path_2 = local_directory + "/" + os.path.basename(files[1])
-        output_path = "./" + project_id + "/" + sample_name
+
 
         command = [
             "salmon", "quant", 
