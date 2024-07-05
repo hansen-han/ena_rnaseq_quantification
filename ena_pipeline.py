@@ -6,6 +6,10 @@ import os
 import urllib.request
 from tqdm import tqdm
 
+def list_subfolders(directory):
+    subfolders = [f.path for f in os.scandir(directory) if f.is_dir()]
+    return subfolders
+
 def delete_file(file_path):
     try:
         # Check if file exists
@@ -99,7 +103,38 @@ def download_and_quantify_bioproject_fastqs(project_id):
         # clean up the FASTQ files so we save space
         delete_file(file_path_1)
         delete_file(file_path_2)
-                
+
+    # combine all quant.sf files into one file and output it
+    print("Combining TPMs into single file...")
+    dfs = []
+    sample_directories = list_subfolders("./" + project_id)
+    for sample_directory in sample_directories:
+        sample_id = sample_directory.split("/")
+        sample_id = sample_id[len(sample_id)-1]
+
+        try:
+            # load the sample counts
+            df = pd.read_csv(sample_directory + "/quant.sf", sep = "\t")
+
+            # rename TPM to the sample name
+            df[sample_id] = df['TPM']
+
+            # remove columns
+            df = df.drop(columns=['Length', 'EffectiveLength', 'NumReads', 'TPM'])
+
+            # combine dataframes
+            dfs.append(df)
+
+        except Exception as e:
+            print("Could not load sample quantification data for sample:", sample_id)
+
+    # Merge DataFrames iteratively on 'Name'
+    result = dfs[0]
+    for df in dfs[1:]:
+        result = pd.merge(result, df, on='Name', how='outer')
+
+    # Save the file
+    result.to_csv(project_id + "_TPMs.csv")
 
 
 
