@@ -55,6 +55,9 @@ def download_and_quantify_bioproject_fastqs(project_id):
     local_directory = './downloaded_files'
 
     for sample in tqdm(project_data):
+        file_path_1 = None
+        file_path_2 = None
+
         sample_name = sample['run_accession']
         output_path = "./" + project_id + "/" + sample_name
 
@@ -68,30 +71,46 @@ def download_and_quantify_bioproject_fastqs(project_id):
         ftp_address = sample['fastq_ftp']
         files = ftp_address.split(";")
 
-        # assuming that we are expecting paired-end reads, if there is only 1, abort.
-        if len(files) < 2:
-            print("Only one file found, skipping")
+        try:
+            for file in files:
+                if "ftp://" not in file:
+                    file = 'ftp://' + file
+                
+                download_ftp_file(file, local_directory)
+        except Exception as e:
+            print("Error downloading files, skipping sample:", sample_name)
+            print("Error:", e)
             continue
 
-        for file in files:
-            if "ftp://" not in file:
-                file = 'ftp://' + file
-            
-            download_ftp_file(file, local_directory)
+        if len(files) == 1:
+            # handle single paired reads
+            file_path_1 = local_directory + "/" + os.path.basename(files[0])
 
-        # After downloading them, quantify them with Salmon
-        file_path_1 = local_directory + "/" + os.path.basename(files[0])
-        file_path_2 = local_directory + "/" + os.path.basename(files[1])
+            command = [
+                "salmon", "quant", 
+                "-i", "gencode_index", 
+                "-l", "A", 
+                "-r", file_path_1, 
+                "-o", output_path
+            ]
+    
+        elif len(files) == 2:
+
+            # After downloading them, quantify them with Salmon
+            file_path_1 = local_directory + "/" + os.path.basename(files[0])
+            file_path_2 = local_directory + "/" + os.path.basename(files[1])
 
 
-        command = [
-            "salmon", "quant", 
-            "-i", "gencode_index", 
-            "-l", "A", 
-            "-1", file_path_1, 
-            "-2", file_path_2, 
-            "-o", output_path
-        ]
+            command = [
+                "salmon", "quant", 
+                "-i", "gencode_index", 
+                "-l", "A", 
+                "-1", file_path_1, 
+                "-2", file_path_2, 
+                "-o", output_path
+            ]
+        else:
+            raise ValueError("Unexpected: > 2 FASTQ files for sample detected, sample:", sample_name)
 
         try:
             # Execute command
@@ -101,8 +120,11 @@ def download_and_quantify_bioproject_fastqs(project_id):
             print("Sample:", sample_name)
 
         # clean up the FASTQ files so we save space
-        delete_file(file_path_1)
-        delete_file(file_path_2)
+        if file_path_1 is not None:
+            delete_file(file_path_1)
+
+        if file_path_2 is not None:
+            delete_file(file_path_2)
 
     # combine all quant.sf files into one file and output it
     print("Combining TPMs into single file...")
@@ -117,7 +139,16 @@ def download_and_quantify_bioproject_fastqs(project_id):
             df = pd.read_csv(sample_directory + "/quant.sf", sep = "\t")
 
             # rename TPM to the sample name
-            df[sample_id] = df['TPM']
+            #df[sample_id] = df['TPM']
+
+            # (Custom Code - convert to GEO accession)
+            geo_code = None
+            for sample_data in project_data:
+                if sample_id == sample_data['run_accession']:
+                    geo_code = sample_data['sample_alias']
+    
+            df[geo_code] = df['TPM']
+
 
             # remove columns
             df = df.drop(columns=['Length', 'EffectiveLength', 'NumReads', 'TPM'])
