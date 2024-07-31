@@ -59,10 +59,10 @@ def download_and_quantify_bioproject_fastqs(project_id):
         file_path_2 = None
 
         sample_name = sample['run_accession']
-        output_path = "./" + project_id + "/" + sample_name
 
-        # Check if the file exists
-        file_exists = os.path.exists(output_path)
+        # Check if the sample has already been quantified
+        output_path = "./" + project_id + "/" + sample_name
+        file_exists = os.path.exists(output_path + "/quant.sf")
         if file_exists:
             print("Sample already processed, skipping")
             continue
