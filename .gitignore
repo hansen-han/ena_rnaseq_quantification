@@ -1,0 +1,11 @@
+*.gz
+*.csv
+*.bin
+*.json
+/gencode_index
+*.log
+*.tsv
+*.txt
+*.sf
+*.DS_Store
+*.pyc
