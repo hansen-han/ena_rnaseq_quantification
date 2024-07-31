@@ -25,7 +25,7 @@ salmon index -t gencode.v39.transcripts.fa.gz --gencode -i gencode_index
 
 ### Usage
 
-Given some BioProject IDs (ie: PRJNA494155, PRJNA494156, PRJNA494157), run the following python script while in the conda environment.
+Given some BioProject IDs (ie: PRJNA494155, PRJNA494156, PRJNA494157), run the following python script while in the conda environment. Can handle any number of project IDs to queue up. 
 
 ```
 run_pipeline.py PRJNA494155 PRJNA494156 PRJNA494157
